@@ -1,0 +1,8 @@
+chore(deps): update eslint requirement
+
+Updates the requirements on [eslint](https://github.com/eslint/eslint) to permit the latest version.
+- [Release notes](https://github.com/eslint/eslint/releases)
+- [Changelog](https://github.com/eslint/eslint/blob/master/CHANGELOG.md)
+- [Commits](https://github.com/eslint/eslint/compare/v7.16.0...v7.17.0)
+
+Signed-off-by: dependabot[bot] <support@github.com>
