@@ -1,0 +1,9 @@
+feat(test): This is also valid commit
+
+The parser has trouble with this customer footer annotation.
+
+Fixes: #3
+You can tell it where the footer starts by using the word `footer`
+surrounded by hyphens on its own line.
+
+-footer-
