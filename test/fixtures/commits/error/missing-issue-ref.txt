@@ -1,0 +1,6 @@
+refactor(lib)!: this commit has no valid issue reference
+
+Everything needs and associated issue reference. If it is missing,
+it will cause a warning.
+
+BREAKING CHANGE: This is a footer for a breaking change
