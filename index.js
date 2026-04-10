@@ -38,7 +38,7 @@ const config = {
       ]
     }
   }
-, ignores: []
+, ignores: require('./lib/ignores/index.js')
 , rules: {
     'body-empty': [2, 'never']
   , 'body-leading-blank': [2, 'always']
