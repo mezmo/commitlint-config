@@ -1,0 +1,5 @@
+fix(lib): Correct retry logic
+
+This fixes a bug in the retry logic for the HTTP request.
+
+Fixes: NOPE

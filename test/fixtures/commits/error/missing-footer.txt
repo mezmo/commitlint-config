@@ -1,0 +1,3 @@
+chore: this commit has no valid footer
+
+This is the body, and it's long enough to pass the 20-character minimum
