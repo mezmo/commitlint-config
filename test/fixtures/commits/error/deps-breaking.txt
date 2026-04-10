@@ -1,0 +1,5 @@
+chore(deps): thing@5.0.0
+
+This should not pass linting because it's a major
+
+BREAKING CHANGE: This bump should break something

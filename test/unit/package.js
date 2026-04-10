@@ -17,5 +17,23 @@ test('package', async (t) => {
       }, 'commit passes linting rules')
     }
   })
+
+  t.test('error cases', async (t) => {
+    testCommit(t, {
+      commit: fixtures.error['deps-breaking']
+    , report: {
+        valid: false
+      , errors: [
+          {
+            level: 2
+          , valid: false
+          , name: 'references-empty'
+          , message: 'references may not be empty'
+          }
+        ]
+      , warnings: []
+      }
+    })
+  })
 })
 
