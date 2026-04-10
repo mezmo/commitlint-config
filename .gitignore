@@ -1,0 +1,22 @@
+# test artifacts
+.tap
+.tap-out
+
+# IDE files
+.idea
+*.swp
+*.vim
+
+# dev files
+*.save
+*.tgz
+.npm
+.eslintcache/
+.node_repl_history
+node_modules/
+npm-debug.log
+
+# Runtime data
+*.pid
+*.seed
+*.pid.lock
