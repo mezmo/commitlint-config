@@ -1,0 +1,6 @@
+feat(rules): This is a valid commit
+
+Example of a well-formatted commit that follows all of the rules
+There are no errors becuase it is perfect.
+
+Fixes: #1
