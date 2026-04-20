@@ -1,0 +1,13 @@
+commitlint-logdna - Liting tool for git commit messages
+
+  usage: commitlint-logdna [options]
+  usage: commitlint-logdna --from origin/main --to HEAD --pwd $PWD
+
+  options:
+    -h, --help                 show help and usage
+    -v, --version              show version
+    -f, --from [origin/main]   the git ref where linting should begin
+    -t, --to [HEAD]            the git ref where linting should end
+    -p, --pwd <path>           set the root directory
+    --config <path>            path to an alternate commitlint config module
+

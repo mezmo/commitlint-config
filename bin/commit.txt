@@ -1,0 +1,23 @@
+feat(api)!: add oauth2 support
+──┬─ ─┬─ ┬  ─┬────────────────
+  │   │  │   └─ SUBJECT: Clear description
+  │   │  └───── BREAKING CHANGE: The "!" bang (optional)
+  │   └──────── SCOPE: The module/area (optional)
+  └──────────── TYPE: feat, fix, chore, etc.
+
+[BODY]
+Detailed explaination of the the changes and why they are being made.
+The body must contain a description at minimum 20 characters and lines
+are expected to wrap at 72 characters.
+
+BREAKING CHANGE: breaking changes should be highlighted here.
+BREAKING CHANGE: Multiple breaking changes can be placed on separate lines.
+
+[FOOTER]
+Co-authored-by: @peer
+See: http://some.example.com
+Closes: #1224
+───┬──  ┬ ─┬─
+   │    │  └────── ISSUE NUMBER: The numerical value of a related issue
+   │    └───────── ISSUE PREFIX: The identifiable issue prefix (e.g., #, GH-, LOG-)
+   └────────────── ISSUE ACTION: The key (e.g., Closes, Fixes, See)

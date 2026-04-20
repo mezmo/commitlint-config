@@ -9,6 +9,9 @@
   "license": "MIT",
   "author": "eric.satterwhite <eric.satterwhite@mezmo.com>",
   "type": "commonjs",
+  "bin": {
+    "commitlint-mzm": "./bin/cli.js"
+  },
   "exports": {
     ".": {
       "import": "./index.js",
@@ -48,9 +51,11 @@
     "@commitlint/load": "^20.5.0",
     "@commitlint/parse": "^20.5.0",
     "eslint": "^10.2.0",
-    "eslint-config-logdna": "^8.0.1"
+    "eslint-config-logdna": "^8.0.1",
+    "gitlog": "^5.1.0"
   },
   "devDependencies": {
+    "execa": "^9.6.1",
     "tap": "^21.6.3"
   }
 }

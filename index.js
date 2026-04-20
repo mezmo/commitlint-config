@@ -1,5 +1,7 @@
 'use strict'
 
+const {ISSUE_PREFEXIS, REFERENCE_ACTIONS, COMMIT_TYPES} = require('./lib/constants.js')
+
 const config = {
   parserPreset: {
     parserOpts: {
@@ -7,35 +9,8 @@ const config = {
     , breakingHeaderPattern: /^(\w*)(?:\((.*)\))?!: (.*)$/
     , headerPattern: /^(\w*)(?:\((.*)\))?!?: (.*)$/
     , headerCorrespondence: ['type', 'scope', 'subject']
-    , issuePrefixes: [
-      // Github issues
-        '#'
-      , 'gh-'
-
-      // Mezmo Jira Issuas
-      , 'LOG-'
-      , 'PROD-'
-      , 'SCT-'
-      , 'VM-'
-      , 'INFRA-'
-      , 'COM-'
-      ]
-    , referenceActions: [
-      // Common Github trailers
-        'close'
-      , 'closes'
-      , 'closed'
-      , 'fix'
-      , 'fixes'
-      , 'fixed'
-      , 'resolve'
-      , 'resolves'
-      , 'resolved'
-
-      // mezmo internal trailers
-      , 'ref'
-      , 'Ref'
-      ]
+    , issuePrefixes: ISSUE_PREFEXIS
+    , referenceActions: REFERENCE_ACTIONS
     }
   }
 , ignores: require('./lib/ignores/index.js')
@@ -59,10 +34,7 @@ const config = {
   , 'subject-full-stop': [2, 'never', '.']
   , 'type-case': [2, 'always', 'lower-case']
   , 'type-empty': [2, 'never']
-  , 'type-enum': [2, 'always', [
-      'build', 'ci', 'chore', 'doc', 'feat', 'fix'
-    , 'lib', 'perf', 'refactor', 'style', 'test'
-    ]]
+  , 'type-enum': [2, 'always', COMMIT_TYPES]
   }
 }
 
