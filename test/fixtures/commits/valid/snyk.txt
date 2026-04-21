@@ -1,0 +1,3 @@
+fix: upgrade fastify from 3.20.2 to 3.25.3
+
+Snyk has created this PR to upgrade fastify from 3.20.2 to 3.25.3.
