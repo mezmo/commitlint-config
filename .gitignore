@@ -1,6 +1,8 @@
 # test artifacts
 .tap
 .tap-out
+.tap-json
+.eslint.json
 
 # IDE files
 .idea

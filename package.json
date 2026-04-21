@@ -21,9 +21,13 @@
   },
   "scripts": {
     "tap": "tap",
+    "pretest": "rm -rf .tap*",
     "test": "./scripts/test-ci.sh",
-    "lint": "eslint .",
-    "lint:fix": "npm run lint -- --fix"
+    "lint": "eslint ",
+    "lint:fix": "npm run lint -- --fix",
+    "prelint:ci": "rm -f .eslint.json",
+    "lint:ci": "eslint -f json-relative > .eslint.json || true",
+    "commitlint": "./bin/cli.js"
   },
   "tap": {
     "browser": false,
@@ -55,6 +59,7 @@
     "gitlog": "^5.1.0"
   },
   "devDependencies": {
+    "eslint-formatter-json-relative": "^0.1.0",
     "execa": "^9.6.1",
     "tap": "^21.6.3"
   }
