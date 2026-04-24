@@ -1,6 +1,6 @@
 {
   "name": "@mezmoinc/commitlint-config",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Shareable commitlint configuration for Mezmo Inc.",
   "keywords": [
     "commitlint",
