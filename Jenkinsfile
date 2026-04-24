@@ -2,14 +2,10 @@ library 'magic-butler-catalogue'
 
 def PROJECT_NAME = "commitlint-config"
 def DEFAULT_BRANCH = 'main'
-def TRIGGER_PATTERN = ".*@logdnabot.*"
+def TRIGGER_PATTERN = ".*@triggerbuild.*"
 def BUILD_SLUG = slugify(env.BUILD_TAG)
 
-def GIT_BRANCH = [env.CHANGE_BRANCH, env.BRANCH_NAME]?.find{branch -> branch != null}
-
-def NPMRC = [
-    configFile(fileId: 'npmrc', variable: 'NPM_CONFIG_USERCONFIG')
-]
+def CURRENT_BRANCH = [env.CHANGE_BRANCH, env.BRANCH_NAME]?.find{branch -> branch != null}
 
 pipeline {
   agent {
@@ -33,12 +29,9 @@ pipeline {
   }
 
   stages {
-
     stage('Setup') {
       steps {
-        configFileProvider(NPMRC) {
-          sh 'npm install'
-        }
+        sh 'npm install'
       }
     }
 
@@ -60,6 +53,7 @@ pipeline {
               name: 'ESLint Analysis',
               sourceDirectories: [[path: "${WORKSPACE}"]],
               checksAnnotationScope: 'ALL',
+              minimumSeverity: 'ERROR',
               qualityGates: [[threshold: 1, type: 'TOTAL', criticality: 'FAILURE']],
               stopBuild: true
             )
@@ -84,6 +78,52 @@ pipeline {
             reportFiles: '*.html',
             reportName: "coverage-${BUILD_SLUG}"
           ]
+        }
+      }
+    }
+
+    stage('Release Test') {
+      environment {
+        GIT_BRANCH = "${CURRENT_BRANCH}"
+        BRANCH_NAME = "${CURRENT_BRANCH}"
+        CHANGE_ID = ""
+      }
+
+      when {
+        beforeAgent true
+        not {
+          branch DEFAULT_BRANCH
+        }
+      }
+
+      steps {
+        sh 'npm install'
+        sh "git checkout -b ${BRANCH_NAME}"
+
+        withCredentials([
+           string(credentialsId: 'github-api-token', variable: 'GITHUB_TOKEN'),
+           string(credentialsId: 'npm-publish-token', variable: 'NPM_TOKEN')
+        ]) {
+          sh "npm run release:dry"
+        }
+      }
+    }
+
+    stage('Release') {
+      when {
+        beforeAgent true
+        branch DEFAULT_BRANCH
+        not {
+          changelog '\\[skip ci\\]'
+        }
+      }
+
+      steps {
+        withCredentials([
+           string(credentialsId: 'github-api-token', variable: 'GITHUB_TOKEN'),
+           string(credentialsId: 'npm-publish-token', variable: 'NPM_TOKEN')
+        ]) {
+          sh 'npm run release'
         }
       }
     }
