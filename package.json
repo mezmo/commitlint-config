@@ -67,12 +67,12 @@
     "@commitlint/lint": "^20.5.0",
     "@commitlint/load": "^20.5.0",
     "@commitlint/parse": "^20.5.0",
-    "eslint": "^10.2.1",
     "eslint-config-logdna": "^8.0.1",
     "gitlog": "^5.1.0"
   },
   "devDependencies": {
     "@mezmoinc/release-config-core": "^1.0.0",
+    "eslint": "^10.3.0",
     "eslint-formatter-json-relative": "^0.1.0",
     "execa": "^9.6.1",
     "tap": "^21.7.2"
