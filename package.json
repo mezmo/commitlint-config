@@ -67,6 +67,7 @@
     "@commitlint/lint": "^20.5.3",
     "@commitlint/load": "^20.5.3",
     "@commitlint/parse": "^20.5.0",
+    "build-md": "^0.4.5",
     "eslint-config-logdna": "^8.0.1",
     "gitlog": "^5.1.0"
   },
