@@ -39,7 +39,24 @@ pipeline {
       stages{
         stage("CommitLint") {
           steps {
-            sh 'npm run commitlint'
+            sh 'npm run commitlint -- --format=checkstyle'
+          }
+          post {
+            always {
+              script {
+                if (fileExists('.commitlint/report/checkstyle.json')) {
+                  def report = readJSON file: '.commitlint/report/checkstyle.json'
+                  publishChecks(
+                    name: report.name,
+                    title: report.title,
+                    summary: report.summary,
+                    text: report.text,
+                    conclusion: report.conclusion,
+                    status: 'COMPLETED',
+                  )
+                }
+              }
+            }
           }
         }
 

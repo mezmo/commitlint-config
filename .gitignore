@@ -3,6 +3,7 @@
 .tap-out
 .tap-json
 .eslint.json
+.commitlint/
 
 # IDE files
 .idea

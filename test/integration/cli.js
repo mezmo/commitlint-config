@@ -73,6 +73,23 @@ test('cli', async (t) => {
     t.equal(stdout, version, 'output from --version')
   })
 
+  t.test('invalid format', async (t) => {
+    const {stderr, exitCode} = await execaNode(cli, [
+      '--format'
+    , 'fake'
+    ]).catch((out) => {
+      return out
+    })
+
+    t.equal(exitCode, 1, 'exit code')
+    t.match(stderr, /Unknown format: fake/i, 'error message mentions unknown format')
+    t.match(
+      stderr
+    , /Valid formats: pretty, checkstyle/i
+    , 'error message lists valid formats'
+    )
+  })
+
   t.test('failed lint', async (t) => {
     const cwd = await mktmp()
     t.teardown(async () => {
@@ -82,7 +99,14 @@ test('cli', async (t) => {
     await init(cwd)
     await branch(cwd, true)
 
-    const {stderr, exitCode} = await execaNode(cli, ['-f', 'main'], {
+    const {stderr, exitCode} = await execaNode(cli, [
+      '-f'
+    , 'main'
+    , '--format'
+    , 'pretty'
+    , '--format'
+    , 'checkstyle'
+    ], {
       cwd
     }).catch((out) => {
       return out
@@ -111,6 +135,25 @@ test('cli', async (t) => {
     t.match(stderr, /footer must not be empty/gi)
   })
 
+  t.test('default parameters', async (t) => {
+    const cwd = await mktmp()
+    t.teardown(async () => {
+      await fs.promises.rm(cwd, {recursive: true, force: true})
+    })
+
+    await init(cwd)
+    await branch(cwd, false)
+
+    const {exitCode} = await execaNode(cli, [
+      '-f'
+    , 'main'
+    ], {cwd}).catch((out) => {
+      return out
+    })
+
+    t.equal(exitCode, 0, 'exit code')
+  })
+
   t.test('successful lint', async (t) => {
     const cwd = await mktmp()
     t.teardown(async () => {
@@ -120,7 +163,14 @@ test('cli', async (t) => {
     await init(cwd)
     await branch(cwd, false)
 
-    await execaNode(cli, ['-f', 'main'], {cwd}).catch((out) => {
+    await execaNode(cli, [
+      '-f'
+    , 'main'
+    , '--format'
+    , 'pretty'
+    , '--format'
+    , 'checkstyle'
+    ], {cwd}).catch((out) => {
       t.equal(out.exitCode, 0, 'exit code')
     })
   })

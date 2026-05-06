@@ -10,4 +10,5 @@ commitlint-logdna - Liting tool for git commit messages
     -t, --to [HEAD]            the git ref where linting should end
     -p, --pwd <path>           set the root directory
     --config <path>            path to an alternate commitlint config module
+    --format <format>          output format: pretty, checkstyle (can be specified multiple times)
 
