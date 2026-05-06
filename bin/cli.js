@@ -5,6 +5,7 @@ const fs = require('node:fs')
 const path = require('node:path')
 const util = require('node:util')
 const {default: gitlog} = require('gitlog')
+const {MarkdownDocument, md} = require('build-md')
 const {default: lint} = require('@commitlint/lint')
 const {default: load} = require('@commitlint/load')
 const {version} = require('../package.json')
@@ -44,6 +45,10 @@ const LEVEL = {
 , IGNORE: 0
 }
 
+const FORMATS = {
+  pretty: toPretty
+, checkstyle: toCheckStyle
+}
 module.exports = main
 
 function colorize(txt, color) {
@@ -92,6 +97,12 @@ if (module === require.main) {
       , 'description': 'Start commit'
       , 'default': 'origin/main'
       }
+    , format: {
+        'type': 'string'
+      , 'description': 'output format (can be specified multiple times)'
+      , 'multiple': true
+      , 'default': ['pretty']
+      }
     }
   })
   const {values: flags} = parsed
@@ -99,95 +110,164 @@ if (module === require.main) {
   if (flags.help) return console.log(usage.trim())
   if (flags.version) return console.log(version.trim())
 
+  const formats = flags.format && flags.format.length > 0
+    ? flags.format
+    /* c8 ignore next */
+    : ['pretty']
+
   main(flags)
-    .then((out) => {
-      process.exitCode = out.valid ? 0 : 1
-      // 2. Custom summary line
-      const total = out.total
-      const failed = out.failed
-      const warnings = out.warnings
-      const passed = out.passed
+    .then((result) => {
+      process.exitCode = result.valid ? 0 : 1
 
-      // Build summary string
-      const passed_msg = `${passed} passed`
-      const fail_msg = `${failed} failed`
-      const warn_msg = `${warnings} with warnings`
+      // Run each formatter
+      for (const format of formats) {
+        const formatter = FORMATS[format]
 
-      const lines = []
-      for (const {input, errors, warnings: commitWarnings, _, sha} of out.results) {
-        const result = errors.concat(commitWarnings)
-        const subject = input.split('\n')[0]
-        const commit_sha = sha.substring(0, 7)
-        lines.push(
-          ''
-        , `${SYMBOLS.HEADER} (${colorize(commit_sha, 'UNDER_BLUE')}) ${subject}`
-        )
-
-        if (!errors.length && !commitWarnings.length) {
-          lines.push(`  ${colorize(SYMBOLS.OK, 'GREEN')}  valid`)
-          continue
+        if (typeof formatter !== 'function') {
+          const error = new Error(`Unknown format: ${format}. Valid formats: ${Object.keys(FORMATS).join(', ')}`)
+          throw error
         }
-
-        // Sort by type (errors first), then by name
-        const sorted = result.sort((a, b) => {
-          return a.level - b.level
-        })
-
-        for (const issue of sorted) {
-        /* c8 ignore next */
-          if (issue.valid) continue
-
-          const custom_message = ERROR_MESSAGES[issue.name]
-          const display_message = custom_message
-            ? custom_message.message
-            /* c8 ignore next */
-            : issue.message
-          const explanation = custom_message?.explanation
-          const symbol = issue.level === LEVEL.ERROR
-
-            ? colorize(SYMBOLS.ERROR, 'RED')
-          /* c8 ignore next */
-            : colorize(SYMBOLS.WARN, 'YELLOW')
-
-          lines.push(
-            `  ${symbol}  ${display_message} [${colorize(issue.name, 'DIM')}]`
-          )
-
-          if (explanation) {
-            lines.push(
-              `       ${SYMBOLS.INFO} ${colorize(explanation, 'DIM')}`
-            )
-          }
-        }
+        formatter(result, flags)
       }
-
-      let summary = `${total} commit(s) checked:`
-      if (passed) summary += ` ${SYMBOLS.OK} ${colorize(passed_msg, 'GREEN')}`
-      if (failed) summary += ` | ${SYMBOLS.ERROR} ${colorize(fail_msg, 'RED')}`
-      /* c8 ignore next: we don't have any default rules at this level */
-      if (warnings) summary += ` | ${SYMBOLS.WARN} ${colorize(warn_msg, 'YELLOW')}`
-
-      lines.push(summary)
-
-      if (failed || warnings) {
-        lines.push(
-          `# Get help: ${HELP_URL}`
-        , `# Conventional Commit Specificaiton: ${SPEC_URL}`
-        )
-      }
-
-      if (failed) {
-        const example = fs.readFileSync(path.join(__dirname, 'commit.txt'), 'utf8')
-        lines.push(
-          ''
-        , 'A Conventional Commit'
-        , ''
-        , `${colorize(example, 'DIM')}`
-        )
-      }
-
-      console.error(lines.join('\n'))
     }).catch(handleCatch)
+}
+
+function toPretty(results) {
+  // 2. Custom summary line
+  const total = results.total
+  const failed = results.failed
+  const warnings = results.warnings
+  const passed = results.passed
+
+  // Build summary string
+  const passed_msg = `${passed} passed`
+  const fail_msg = `${failed} failed`
+  const warn_msg = `${warnings} with warnings`
+
+  const lines = []
+  for (const {input, errors, warnings: commitWarnings, _, sha} of results.results) {
+    const result = errors.concat(commitWarnings)
+    const subject = input.split('\n')[0]
+    const commit_sha = sha.substring(0, 7)
+    lines.push(
+      ''
+    , `${SYMBOLS.HEADER} (${colorize(commit_sha, 'UNDER_BLUE')}) ${subject}`
+    )
+
+    if (!errors.length && !commitWarnings.length) {
+      lines.push(`  ${colorize(SYMBOLS.OK, 'GREEN')}  valid`)
+      continue
+    }
+
+    // Sort by type (errors first), then by name
+    const sorted = result.sort((a, b) => {
+      return a.level - b.level
+    })
+
+    for (const issue of sorted) {
+      /* c8 ignore next */
+      if (issue.valid) continue
+
+      const custom_message = ERROR_MESSAGES[issue.name]
+      const display_message = custom_message
+        ? custom_message.message
+      /* c8 ignore next */
+        : issue.message
+      const explanation = custom_message?.explanation
+      const symbol = issue.level === LEVEL.ERROR
+
+        ? colorize(SYMBOLS.ERROR, 'RED')
+      /* c8 ignore next */
+        : colorize(SYMBOLS.WARN, 'YELLOW')
+
+      lines.push(
+        `  ${symbol}  ${display_message} [${colorize(issue.name, 'DIM')}]`
+      )
+
+      if (explanation) {
+        lines.push(
+          `       ${SYMBOLS.INFO} ${colorize(explanation, 'DIM')}`
+        )
+      }
+    }
+  }
+
+  let summary = `${total} commit(s) checked:`
+  if (passed) summary += ` ${SYMBOLS.OK} ${colorize(passed_msg, 'GREEN')}`
+  if (failed) summary += ` | ${SYMBOLS.ERROR} ${colorize(fail_msg, 'RED')}`
+  /* c8 ignore next: we don't have any default rules at this level */
+  if (warnings) summary += ` | ${SYMBOLS.WARN} ${colorize(warn_msg, 'YELLOW')}`
+
+  lines.push(summary)
+
+  if (failed || warnings) {
+    lines.push(
+      `# Get help: ${HELP_URL}`
+    , `# Conventional Commit Specificaiton: ${SPEC_URL}`
+    )
+  }
+
+  if (failed) {
+    const example = fs.readFileSync(path.join(__dirname, 'commit.txt'), 'utf8')
+    lines.push(
+      ''
+    , 'A Conventional Commit'
+    , ''
+    , `${colorize(example, 'DIM')}`
+    )
+  }
+
+  console.error(lines.join('\n'))
+}
+function toCheckStyle(results, flags) {
+  const issues = []
+  for (const issue of results.results) {
+    const sha = issue.sha.substring(0, 7)
+
+    const lines = issue.errors.concat(issue.warnings)
+
+    for (const issue of lines) {
+      issues.push({
+        fileName: 'COMMIT_MSG'
+      , lineStart: 0
+      , lineEnd: 0
+      , columnStart: 0
+      , columnEnd: 0
+      , message: issue.message
+      , description: issue.name
+      , severity: issue.level === LEVEL.ERROR ? 'ERROR' /* c8 ignore next */ : 'WARNING'
+      , type: issue.name
+      , fingerprint: sha
+      })
+    }
+  }
+  const symbol = results.errors
+    ? '\u274C' // red x
+    : '\uD83D\uDFE2' // green dot
+
+  const summary = results.errors
+    ? 'Commit style errors encountered. '
+      + 'Please rebase and amend commits to fix messages, then push the updated commits.'
+    : 'All commits follow the conventional commit style. Great work!'
+
+  const output = JSON.stringify({
+    issues: issues
+  , name: 'Commitlint'
+  , text: buildReport(results)
+  , summary: util.format('%s %s', symbol, summary)
+  , title: 'Commitlint'
+  , conclusion: results.errors ? 'FAILURE' : 'SUCCESS'
+  })
+
+  // Output to file if specified, otherwise default to commitlint/report/checkstyle.json
+  const pwd = flags.pwd /* c8 ignore next */ || process.cwd()
+  const report_dir = flags['report-dir'] || path.join(pwd, '.commitlint', 'report')
+  const out_file = path.join(report_dir, 'checkstyle.json')
+
+  // Ensure directory exists
+  fs.mkdirSync(report_dir, {recursive: true})
+
+  fs.writeFileSync(out_file, output, 'utf8')
 }
 
 async function main(flags) {
@@ -244,6 +324,75 @@ function toConfig(loaded) {
   , rules
   , ...opts
   }
+}
+
+function buildReport(results) {
+  const has_failures = results.errors > 0 || results.warnings > 0
+
+  let report = new MarkdownDocument()
+    .$foreach(results.results, (doc, {input, errors, warnings, sha}) => {
+      const subject = input.split('\n')[0]
+      const commit_sha = sha.substring(0, 7)
+      const has_errors = errors.length > 0
+
+      // Commit heading with status indicator (git SHA in blue using LaTeX)
+      const status_icon = has_errors ? ':red_circle:' : ':green_circle:'
+      const colored_sha = `$\\{\\color{blue}${commit_sha}\\}$`
+      let updated = doc.heading(3, `${status_icon} commit (${colored_sha}) ${subject}`)
+
+      // If there are errors or warnings, list them
+      const issues = errors.concat(warnings)
+      if (issues.length > 0) {
+        const list_items = issues
+          .filter((issue) => { return !issue.valid })
+          .map((issue) => {
+            const custom_message = ERROR_MESSAGES[issue.name]
+            const explanation = custom_message?.explanation
+
+            const display_message = custom_message
+              ? custom_message.message
+              /* c8 ignore next */
+              : issue.message
+
+            const symbol = issue.level === LEVEL.ERROR
+              ? ':heavy_exclamation_mark:'
+              /* c8 ignore next */
+              : ':warning:'
+
+            // LaTex colorizing
+            // see: https://github.com/orgs/community/discussions/31570
+            const colored_rule = `$\\{\\color{red}${issue.name}\\}$`
+            const item = md`${symbol} ${display_message} &#91; ${colored_rule} &#93;`
+
+            // Add explanation as nested list item if available
+            if (explanation) {
+              return md`${item}\n  * :information_source: ${explanation}`
+            }
+            /* c8 ignore next */
+            return item
+          })
+
+        if (list_items.length > 0) {
+          updated = updated.list(list_items)
+        }
+      }
+
+      return updated
+    })
+
+  // Add commit example and help links if there are failures
+  if (has_failures) {
+    const example = fs.readFileSync(path.join(__dirname, 'commit.txt'), 'utf8')
+    report = report
+      .rule()
+      .heading(3, 'A Conventional Commit')
+      .code('txl', example)
+      .rule()
+      .paragraph(md`**Get help:** ${md.link(HELP_URL, HELP_URL)}`)
+      .paragraph(md`**Conventional Commit Specification:** ${md.link(SPEC_URL, SPEC_URL)}`)
+  }
+
+  return report.toString()
 }
 
 /* c8 ignore start */

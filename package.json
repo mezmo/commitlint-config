@@ -40,7 +40,7 @@
     "lint:ci": "eslint -f json-relative > .eslint.json || true",
     "release": "npx semantic-release",
     "release:dry": "npm run release -- --no-ci --dry-run --branches=${BRANCH_NAME:-main}",
-    "commitlint": "./bin/cli.js"
+    "commitlint": "./bin/cli.js --format=pretty"
   },
   "tap": {
     "browser": false,
