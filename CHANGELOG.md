@@ -1,5 +1,20 @@
 ## Changelog
 
+# [1.1.0](https://github.com/mezmo/commitlint-config/compare/v1.0.0...v1.1.0) (2026-05-06)
+
+
+### Bug Fixes
+
+* **lib**: include additional issue reference prefix [107b684](https://github.com/mezmo/commitlint-config/commit/107b684d3e3be4bf25205524036512a1c5114846) - Eric Satterwhite
+
+### Chores
+
+* **dep-dev**: tap@21.72 [196af2d](https://github.com/mezmo/commitlint-config/commit/196af2d7b9d27e35dd3eee03357c6d7651cca52e) - Eric Satterwhite* **deps**: build-md@0.4.5 [fabbbec](https://github.com/mezmo/commitlint-config/commit/fabbbec1e96921fe65dce1064b472076d8b1c2f9) - Eric Satterwhite [LOG-1792](https://mezmo.atlassian.net/browse/LOG-1792)* **deps**: commitlint/lint@20.5.0 [4ec3dad](https://github.com/mezmo/commitlint-config/commit/4ec3dadd3ff2d496591f3a324fff2fdf098df9b2) - Eric Satterwhite* **dev-dep**: eslint@10.3.0 [1ac5037](https://github.com/mezmo/commitlint-config/commit/1ac503789c4989bc659c3a78e991dbeea1a014b7) - Eric Satterwhite
+
+### Features
+
+* **cli**: add support for github freindly output [5872f19](https://github.com/mezmo/commitlint-config/commit/5872f19528bf371dad8a463256475cd80d4e2961) - Eric Satterwhite* **cli**: add support for multi line explainations [4c5cd4e](https://github.com/mezmo/commitlint-config/commit/4c5cd4e0ce357be05519c229621ba6993ef848df) - Eric Satterwhite
+
 # 1.0.0 (2026-04-24)
 
 
