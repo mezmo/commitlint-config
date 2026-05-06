@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 'use strict'
 
+const os = require('node:os')
 const fs = require('node:fs')
 const path = require('node:path')
 const util = require('node:util')
@@ -10,6 +11,7 @@ const {default: lint} = require('@commitlint/lint')
 const {default: load} = require('@commitlint/load')
 const {version} = require('../package.json')
 const {ERROR_MESSAGES} = require('../lib/constants.js')
+const array = require('../lib/lang/array/index.js')
 const usage = fs.readFileSync(path.join(__dirname, './usage.txt'), 'utf8')
 
 const log = util.debuglog('lint')
@@ -63,45 +65,49 @@ if (module === require.main) {
   const parsed = util.parseArgs({
     args: process.argv.slice(2)
   , options: {
-      help: {
+      'help': {
         'short': 'h'
       , 'type': 'boolean'
       , 'description': 'Show help message'
       }
-    , version: {
+    , 'version': {
         'short': 'v'
       , 'type': 'boolean'
       , 'description': 'Show version'
       }
-    , pwd: {
+    , 'pwd': {
         'short': 'p'
       , 'type': 'string'
       , 'description': 'Working directory'
       , 'default': process.cwd()
       }
-    , config: {
+    , 'config': {
         'short': 'c'
       , 'type': 'string'
       , 'description': 'Config file path'
       , 'default': CONFIG_PATH
       }
-    , to: {
+    , 'to': {
         'short': 't'
       , 'type': 'string'
       , 'description': 'End commit'
       , 'default': 'HEAD'
       }
-    , from: {
+    , 'from': {
         'short': 'f'
       , 'type': 'string'
       , 'description': 'Start commit'
       , 'default': 'origin/main'
       }
-    , format: {
+    , 'format': {
         'type': 'string'
       , 'description': 'output format (can be specified multiple times)'
       , 'multiple': true
       , 'default': ['pretty']
+      }
+    , 'report-dir': {
+        type: 'string'
+      , description: 'Directory to write lint report files'
       }
     }
   })
@@ -142,7 +148,7 @@ function toPretty(results) {
   // Build summary string
   const passed_msg = `${passed} passed`
   const fail_msg = `${failed} failed`
-  const warn_msg = `${warnings} with warnings`
+  const warn_msg = `${warnings} warnings`
 
   const lines = []
   for (const {input, errors, warnings: commitWarnings, _, sha} of results.results) {
@@ -160,9 +166,7 @@ function toPretty(results) {
     }
 
     // Sort by type (errors first), then by name
-    const sorted = result.sort((a, b) => {
-      return a.level - b.level
-    })
+    const sorted = result.sort(sortIssues)
 
     for (const issue of sorted) {
       /* c8 ignore next */
@@ -173,7 +177,7 @@ function toPretty(results) {
         ? custom_message.message
       /* c8 ignore next */
         : issue.message
-      const explanation = custom_message?.explanation
+      const explanation = array.toArray(custom_message?.explanation)
       const symbol = issue.level === LEVEL.ERROR
 
         ? colorize(SYMBOLS.ERROR, 'RED')
@@ -184,10 +188,14 @@ function toPretty(results) {
         `  ${symbol}  ${display_message} [${colorize(issue.name, 'DIM')}]`
       )
 
-      if (explanation) {
-        lines.push(
-          `       ${SYMBOLS.INFO} ${colorize(explanation, 'DIM')}`
-        )
+      if (explanation.length) {
+        for (let idx = 0; idx < explanation.length; idx++) {
+          const line = explanation[idx]
+          const prefix = idx === 0
+            ? `       ${SYMBOLS.INFO} `
+            : '         '
+          lines.push(prefix + colorize(line, 'DIM'))
+        }
       }
     }
   }
@@ -315,6 +323,9 @@ async function main(flags) {
   })
 }
 
+function sortIssues(a, b) {
+  return b.level - a.level
+}
 // This readjusts the config options for passing directly to
 // lint() so the commit parser is configured correctly
 function toConfig(loaded) {
@@ -331,23 +342,23 @@ function buildReport(results) {
 
   let report = new MarkdownDocument()
     .$foreach(results.results, (doc, {input, errors, warnings, sha}) => {
-      const subject = input.split('\n')[0]
+      const subject = input.split(os.EOL)[0]
       const commit_sha = sha.substring(0, 7)
       const has_errors = errors.length > 0
 
-      // Commit heading with status indicator (git SHA in blue using LaTeX)
+      // header
       const status_icon = has_errors ? ':red_circle:' : ':green_circle:'
       const colored_sha = `$\\{\\color{blue}${commit_sha}\\}$`
       let updated = doc.heading(3, `${status_icon} commit (${colored_sha}) ${subject}`)
 
-      // If there are errors or warnings, list them
-      const issues = errors.concat(warnings)
+      // list errors / warnings
+      const issues = errors.concat(warnings).sort(sortIssues)
       if (issues.length > 0) {
         const list_items = issues
           .filter((issue) => { return !issue.valid })
           .map((issue) => {
             const custom_message = ERROR_MESSAGES[issue.name]
-            const explanation = custom_message?.explanation
+            const explanation = array.toArray(custom_message?.explanation)
 
             const display_message = custom_message
               ? custom_message.message
@@ -364,9 +375,10 @@ function buildReport(results) {
             const colored_rule = `$\\{\\color{red}${issue.name}\\}$`
             const item = md`${symbol} ${display_message} &#91; ${colored_rule} &#93;`
 
-            // Add explanation as nested list item if available
-            if (explanation) {
-              return md`${item}\n  * :information_source: ${explanation}`
+            if (explanation.length) {
+              const indent = '&nbsp;'.repeat(6)
+              const explanation_text = explanation.join(`${os.EOL}${indent}`)
+              return md`${item}${os.EOL}  * :information_source: ${explanation_text}`
             }
             /* c8 ignore next */
             return item
@@ -380,7 +392,7 @@ function buildReport(results) {
       return updated
     })
 
-  // Add commit example and help links if there are failures
+  // help links
   if (has_failures) {
     const example = fs.readFileSync(path.join(__dirname, 'commit.txt'), 'utf8')
     report = report

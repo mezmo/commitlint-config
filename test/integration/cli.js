@@ -163,15 +163,20 @@ test('cli', async (t) => {
     await init(cwd)
     await branch(cwd, false)
 
-    await execaNode(cli, [
+    const {exitCode} = await execaNode(cli, [
       '-f'
     , 'main'
     , '--format'
     , 'pretty'
     , '--format'
     , 'checkstyle'
-    ], {cwd}).catch((out) => {
-      t.equal(out.exitCode, 0, 'exit code')
-    })
+    ], {cwd})
+    t.equal(exitCode, 0, 'exit code')
+    t.resolves(
+      fs.promises.stat(
+        path.join(cwd, '.commitlint', 'report', 'checkstyle.json')
+      )
+    , 'checkstyle.json found'
+    )
   })
 }).catch(threw)

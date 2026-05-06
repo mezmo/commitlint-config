@@ -11,4 +11,5 @@ commitlint-logdna - Liting tool for git commit messages
     -p, --pwd <path>           set the root directory
     --config <path>            path to an alternate commitlint config module
     --format <format>          output format: pretty, checkstyle (can be specified multiple times)
+    --report-dir <dir>         location to write report files defaults to --pwd + /.commitlint/report
 
