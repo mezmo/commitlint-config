@@ -64,7 +64,7 @@
     ]
   },
   "dependencies": {
-    "@commitlint/lint": "^20.5.3",
+    "@commitlint/lint": "^21.0.0",
     "@commitlint/load": "^20.5.3",
     "@commitlint/parse": "^20.5.0",
     "build-md": "^0.4.5",
