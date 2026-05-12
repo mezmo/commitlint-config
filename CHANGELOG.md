@@ -1,5 +1,12 @@
 ## Changelog
 
+## [1.1.1](https://github.com/mezmo/commitlint-config/compare/v1.1.0...v1.1.1) (2026-05-12)
+
+
+### Chores
+
+* **rules**: remove the subject casing rule [f613258](https://github.com/mezmo/commitlint-config/commit/f61325897571ee653b76766815347ce7bcd7d6b5) - Eric Satterwhite [#17](https://github.com/mezmo/commitlint-config/issues/17)
+
 # [1.1.0](https://github.com/mezmo/commitlint-config/compare/v1.0.0...v1.1.0) (2026-05-06)
 
 
