@@ -65,7 +65,7 @@
   },
   "dependencies": {
     "@commitlint/lint": "^20.5.3",
-    "@commitlint/load": "^20.5.3",
+    "@commitlint/load": "^21.0.1",
     "@commitlint/parse": "^20.5.0",
     "build-md": "^0.4.5",
     "eslint-config-logdna": "^8.0.1",
